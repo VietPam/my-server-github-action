@@ -23,7 +23,7 @@ jobs:
           echo "Hello World!"
           echo "Action này được chạy vào lúc $(date)"
           
-      - name: Make it fail
-        run: |
-          echo "Thử làm cho workflow bị lỗi để nhận email!"
-          exit 1  # Lệnh này báo cho Linux biết là chương trình bị lỗi
+      # - name: Make it fail
+      #   run: |
+      #     echo "Thử làm cho workflow bị lỗi để nhận email!"
+      #     exit 1  # Lệnh này báo cho Linux biết là chương trình bị lỗi
