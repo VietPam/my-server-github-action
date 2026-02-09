@@ -1,0 +1,24 @@
+name: 10 Minute Hello World
+
+on:
+  # Trigger 1: Chạy theo lịch trình (Cron schedule)
+  schedule:
+    - cron: '*/10 * * * *'
+  
+  # Trigger 2: Cho phép bấm nút chạy thủ công để test ngay (Manual trigger)
+  workflow_dispatch:
+
+jobs:
+  print-hello-job:
+    runs-on: ubuntu-latest # Chạy trên máy ảo Ubuntu của GitHub
+    
+    steps:
+      # Bước 1: Checkout code (tùy chọn, nhưng thường luôn cần)
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # Bước 2: In ra dòng Hello World
+      - name: Run Hello World Script
+        run: |
+          echo "Hello World!"
+          echo "Action này được chạy vào lúc $(date)"
