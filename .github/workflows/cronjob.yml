@@ -39,6 +39,6 @@ jobs:
           
           # Nội dung email (Lấy từ kết quả của bước Python ở trên)
           subject: ${{ steps.scrape_step.outputs.GOLD_SUBJECT }}
-          to: email_cua_ban@gmail.com
+          to: phamquangviet891@gmail.com
           from: GitHub Action Bot
           body: ${{ steps.scrape_step.outputs.GOLD_BODY }}
