@@ -1,0 +1,44 @@
+name: Gold Price Notification
+
+on:
+  schedule:
+    - cron: '*/30 * * * *' # Chạy mỗi 30 phút (tránh spam quá nhiều)
+  workflow_dispatch: # Cho phép bấm nút chạy thử
+
+jobs:
+  check-price-and-email:
+    runs-on: ubuntu-latest
+    
+    steps:
+      # 1. Lấy code về
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # 2. Cài đặt Python
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+
+      # 3. Chạy file Python để lấy giá vàng
+      - name: Scrape Gold Price
+        id: scrape_step  # Đặt ID để bước sau gọi lại được
+        run: python scrape_gold.py
+
+      # 4. Gửi Email (Dùng action có sẵn của cộng đồng)
+      - name: Send mail
+        uses: dawidd6/action-send-mail@v3
+        with:
+          # Cấu hình server mail (Gmail)
+          server_address: smtp.gmail.com
+          server_port: 465
+          secure: true
+          # Lấy tài khoản từ Secret đã cài ở Bước 1
+          username: ${{ secrets.MAIL_USERNAME }}
+          password: ${{ secrets.MAIL_PASSWORD }}
+          
+          # Nội dung email (Lấy từ kết quả của bước Python ở trên)
+          subject: ${{ steps.scrape_step.outputs.GOLD_SUBJECT }}
+          to: email_cua_ban@gmail.com
+          from: GitHub Action Bot
+          body: ${{ steps.scrape_step.outputs.GOLD_BODY }}
