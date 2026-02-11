@@ -43,28 +43,37 @@ def fetch_data(url, label="Unknown"):
 
 def format_time_display(time_str, label):
     if not time_str: return ""
-    
     try:
         dt_obj = None
         formats = ["%d/%m/%Y %H:%M", "%Y-%m-%dT%H:%M:%S", "%Y-%m-%d %H:%M:%S"]
-        
         for fmt in formats:
             try:
                 dt_obj = datetime.strptime(time_str, fmt)
                 break
             except ValueError:
                 continue
-        
         if dt_obj:
             if label in ["1 Giờ", "24 Giờ"]:
                 return dt_obj.strftime("%H:%M %d/%m")
             else:
                 return dt_obj.strftime("%d/%m/%Y")
-        
         return time_str
-        
     except Exception:
         return time_str
+
+def get_diff_html(current_val, min_val):
+    diff = current_val - min_val
+    if diff > 0:
+        color = "#27ae60" # Xanh
+        sign = "+"
+    elif diff < 0:
+        color = "#d9534f" # Đỏ
+        sign = "-"
+    else:
+        color = "#999" # Xám
+        sign = "+"
+    
+    return f'<span style="color: {color}; font-size: 0.85em; display: block; font-weight: normal;">({sign}{abs(diff):,.0f})</span>'
 
 def create_table_html(title, color, rows):
     return f"""
@@ -73,7 +82,7 @@ def create_table_html(title, color, rows):
         <thead>
             <tr style="background-color: #f2f2f2;">
                 <th style="border: 1px solid #ddd; padding: 8px; width: 15%;">Kỳ Hạn</th>
-                <th style="border: 1px solid #ddd; padding: 8px; width: 25%;">Hiện tại</th>
+                <th style="border: 1px solid #ddd; padding: 8px; width: 25%;">Hiện tại <br><span style="font-weight:normal; font-size:10px">(vs Thấp nhất)</span></th>
                 <th style="border: 1px solid #ddd; padding: 8px; width: 30%;">Thấp nhất (Thời gian)</th>
                 <th style="border: 1px solid #ddd; padding: 8px; width: 30%;">Cao nhất (Thời gian)</th>
             </tr>
@@ -105,6 +114,7 @@ if current_data:
     for label, url in APIS.items():
         data = fetch_data(url, label)
         if data:
+            # BUY
             min_buy_item = min(data, key=lambda x: x['buyingPrice'])
             max_buy_item = max(data, key=lambda x: x['buyingPrice'])
             curr_buy_item = data[-1]
@@ -112,10 +122,15 @@ if current_data:
             t_min_buy = format_time_display(min_buy_item.get('dateTime', ''), label)
             t_max_buy = format_time_display(max_buy_item.get('dateTime', ''), label)
             
+            diff_buy_html = get_diff_html(curr_buy_item['buyingPrice'], min_buy_item['buyingPrice'])
+            
             rows_buy += f"""
             <tr>
                 <td style="border: 1px solid #ddd; padding: 6px; font-weight:bold;">{label}</td>
-                <td style="border: 1px solid #ddd; padding: 6px; text-align: right; font-weight: bold;">{curr_buy_item['buyingPrice']:,.0f}</td>
+                <td style="border: 1px solid #ddd; padding: 6px; text-align: right; font-weight: bold;">
+                    {curr_buy_item['buyingPrice']:,.0f}
+                    {diff_buy_html}
+                </td>
                 <td style="border: 1px solid #ddd; padding: 6px; text-align: right; color: #d9534f;">
                     {min_buy_item['buyingPrice']:,.0f} <span style="color: #666; font-size: 0.85em; display:block;">({t_min_buy})</span>
                 </td>
@@ -125,6 +140,7 @@ if current_data:
             </tr>
             """
             
+            # SELL
             min_sell_item = min(data, key=lambda x: x['sellingPrice'])
             max_sell_item = max(data, key=lambda x: x['sellingPrice'])
             curr_sell_item = data[-1]
@@ -132,10 +148,15 @@ if current_data:
             t_min_sell = format_time_display(min_sell_item.get('dateTime', ''), label)
             t_max_sell = format_time_display(max_sell_item.get('dateTime', ''), label)
             
+            diff_sell_html = get_diff_html(curr_sell_item['sellingPrice'], min_sell_item['sellingPrice'])
+            
             rows_sell += f"""
             <tr>
                 <td style="border: 1px solid #ddd; padding: 6px; font-weight:bold;">{label}</td>
-                <td style="border: 1px solid #ddd; padding: 6px; text-align: right; font-weight: bold;">{curr_sell_item['sellingPrice']:,.0f}</td>
+                <td style="border: 1px solid #ddd; padding: 6px; text-align: right; font-weight: bold;">
+                    {curr_sell_item['sellingPrice']:,.0f}
+                    {diff_sell_html}
+                </td>
                 <td style="border: 1px solid #ddd; padding: 6px; text-align: right; color: #d9534f;">
                     {min_sell_item['sellingPrice']:,.0f} <span style="color: #666; font-size: 0.85em; display:block;">({t_min_sell})</span>
                 </td>
@@ -159,8 +180,8 @@ if current_data:
             {table_buy_html}
             {table_sell_html}
             <p style="font-size: 11px; color: #999; margin-top: 20px; border-top: 1px dashed #ccc; padding-top: 10px;">
-                * <strong>Thấp nhất/Cao nhất:</strong> Mức giá đỉnh và đáy trong kỳ hạn.<br>
-                * Thời gian hiển thị theo định dạng Ngày/Tháng/Năm đối với kỳ hạn dài.
+                * <strong>(±...):</strong> Sự chênh lệch giữa giá Hiện Tại so với giá Thấp Nhất trong cùng kỳ hạn.<br>
+                * <strong>Thấp nhất/Cao nhất:</strong> Mức giá đỉnh và đáy trong kỳ hạn.
             </p>
         </div>
     </body>
