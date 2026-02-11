@@ -38,4 +38,4 @@ jobs:
           subject: ${{ steps.scrape_step.outputs.GOLD_SUBJECT }}
           to: phamquangviet891@gmail.com
           from: GitHub Action Bot
-          body: ${{ steps.scrape_step.outputs.GOLD_BODY }}
+          html_body: ${{ steps.scrape_step.outputs.GOLD_BODY }}
