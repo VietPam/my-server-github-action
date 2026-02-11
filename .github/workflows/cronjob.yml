@@ -1,8 +1,18 @@
 name: Gold Price Notification
 
 on:
+  # 1. Chạy khi có commit mới được push (hoặc merge) vào nhánh main
+  push:
+    branches:
+      - main
+
+  # 2. Chạy định kỳ (Cronjob)
   schedule:
-    - cron: '*/30 * * * *'
+    # Giải thích: Phút thứ 0, tại các giờ: 1,3,5,7,9,11,13,15 (UTC) và 23 (UTC)
+    # Tương đương VN: 8h, 10h, 12h, 14h, 16h, 18h, 20h, 22h và 6h sáng
+    - cron: '0 1,3,5,7,9,11,13,15,23 * * *'
+
+  # 3. Cho phép chạy thủ công nút bấm
   workflow_dispatch:
 
 jobs:
@@ -37,5 +47,5 @@ jobs:
           password: ${{ secrets.MAIL_PASSWORD }}
           subject: ${{ steps.scrape_step.outputs.GOLD_SUBJECT }}
           to: phamquangviet891@gmail.com
-          from: GitHub Action Bot
+          from: Gold Price Bot
           html_body: ${{ steps.scrape_step.outputs.GOLD_BODY }}
